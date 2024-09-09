@@ -1,0 +1,6 @@
+Enemy 0
+
+
+Equip: 5
+Equip: 5
+
