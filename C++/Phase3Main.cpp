@@ -3,7 +3,7 @@ using namespace std;
 #include "CircularDynamicArray.cpp"
 #include "Heap.cpp"
 #include "FibHeap.cpp"
- 
+
 //inside FibHeap.cpp the definitition of FibHeapNode is expected, for example:
 //template <typename keytype>
 //struct FibHeapNode {
@@ -35,10 +35,10 @@ int main(){
 	
 	T1.printKey();
 	//Should output 2 3 5 4 8 9 6 10 7
+	
 	CircularDynamicArray<FibHeapNode<string> *> H1;
-	cout << "Line 39" << endl;
 	FibHeap<string> X(A,10,H1), Y;
-	cout << "Line 41" << endl;
+
 	X.printKey();
 	//Should output 
 	//Rank 1
@@ -135,7 +135,7 @@ int main(){
 	//Rank 3
 	//B C J K D P Z E
 
-	cout << Y.extractMin() << endl;
+	Y.extractMin();
 	//Should output B
 
 	Y.printKey();

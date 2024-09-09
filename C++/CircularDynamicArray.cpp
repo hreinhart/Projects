@@ -1,5 +1,5 @@
-#ifndef CircDynArr
-#define CircDynArr
+#ifndef CDA
+#define CDA
 
 #include <bits/stdc++.h>
  
