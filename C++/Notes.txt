@@ -1,0 +1,200 @@
+#include <iostream>
+using namespace std;
+
+int main(){
+    /*
+    for cout common manipulators
+
+    endl: move to next line
+    setw(n): sets width of next value to n
+    setprecision(digits): sets how many digits should appear
+    setfill(ch): sets fill charcter used to pad values
+    left: alights at left edge of field
+    right: aligns to right edge
+    fixed: sets fixed point ouput (no sci notific)
+    scientific: sets scien not output
+    showpoint/noshowpoint: controls if decimal point must appear
+    showpos/noshowpos: controls plus sign appearance
+    uppercase/nouppercase: if uppercase is used in hex
+    boolalpha/noboolalpha: controls whether bools appear as true or false
+    */
+   /* cout << true << endl;
+   cout << boolalpha << true << endl;
+   cout << setfill('-') << setw(8) << "Hello";
+   cout << endl << setw(8) << "World!" << endl;
+   */
+  // IO: Extraction, input 101 A.B
+  /*int n;
+  char c1, t, c2
+  cin >> n;
+  cin >> c1 >> t >> c2;
+  */
+ //n = 101, c1 = A, c2 = B
+
+// Combinations Program
+
+int n, k;
+cout << "Enter the number of objects (n): ";
+cin >> n;
+cout << "Enter the number to be chosen (k): ";
+cin >> k;
+cout << "C(n,k) = " << combinations(n,k) << endl;
+    return 0;
+    int combinations(int n, int k){
+        return fact(n) / (fact(k) * fact(n-k));
+    }
+    int fact(int n){
+        int results = 1;
+        for (int i = 1; i <=n; i++){
+            result *= i;
+        }
+        return result;
+    }
+
+C++ Enhance to Func
+void setMargin(int margin = 72);
+void setMargin(int mX, int mY);
+Ex:
+setMargin(10); // margin = 10
+setMargin(); // margin == 72
+setMargin(10, 15); // mX = 10, mY = 15 
+
+Reference Parameters 
+call by reference
+void solveQuadratic(double a, double b, double c, double & x1, double & x2);
+
+ void swap(int & x, int & y){
+    int tmp = x;
+    x = y;
+    y = tmp;
+}
+results
+int a = 1
+int b = 2
+swap(a,b);
+a = 2
+b = 1
+
+#include <iostream>
+using namespace std;
+
+void modify(int & x, int y) {
+    x++;
+    y++;
+}
+int main() {
+    int a = 1, b = 1;
+    modify(a,b);
+    cout << "a=" << a << " b=" << b << endl;
+    return 0;
+}
+output: a = 2, b = 1, no & on Y so Y is local in fuction not universal
+    
+   //Strings
+   s1 + s2: New string consisting of s1 concatenated with s2
+   s1 = s2: copies s2 into s1
+   s1 += s2: appends s2 to end of s1
+   s1 == s2: compares
+
+   str.insert(pos, text): inserts characters from text before indec position pos
+   str.replace(pos,count,text): replaces count charcters from text starting at position pos
+   bool isdigit(char ch): if is digit
+   bool isaplha(char ch): if is letter
+   bool isalnum(char ch): if is letter or digit
+   bool islower(char ch): if is lower case
+   bool isupper(char ch): if upper case
+   bool isspace(char ch): if whitespace
+   bool tolower(char ch): covers to lowercase if any
+   bool toupper(char ch): make upper if can
+
+    //Files
+// basic file operations
+#include <iostream>
+#include <fstream>
+using namespace std;
+
+int main () {
+  ofstream myfile;
+  myfile.open ("example.txt");
+  myfile << "Writing this to a file.\n";
+  myfile.close();
+  return 0;
+}
+
+    //String Streams
+    #include <sstream>
+    ostringsstream for write
+    istringstream for read
+
+    #include <sstream>
+int main() {
+
+istringstream iss("(1,2)");
+int x, y;
+char ch;
+iss >> ch >> x >> ch >> y >> ch;
+
+ostringstream oss;
+oss << ‘[’ << x << "-" << y << ‘]’;
+string str = oss.str(); // str = "[1-2]"
+}
+
+    // Classes
+    struct Point { // don’t need typedef
+   int x;
+   int y;
+};
+    class typename {
+private: // default for class
+   declarations of private instance variables
+   prototypes of private methods
+public: // default for struct
+       declarations of public instance variables
+   prototypes of public methods
+};
+class Point {
+private:
+   int x;
+public:
+   int y;
+};
+Point pt;
+pt.x = 1; // error
+pt.y = 1; // good
+
+    //.h files and implementation and interfaces
+
+#ifndef _point_h
+#define _point_h
+
+// interface & implementation
+
+class Point {
+public:
+   int getX() {
+      return x;
+   }
+   void setX(int v) {
+      x = v;
+   }
+private:
+   int x;
+};
+
+#endif
+
+#include "point.h"
+
+// usage
+…
+Point p;
+p.setX(1);
+int v = p.getX(); // v = 
+
+
+// Constructors
+
+
+
+    return 0;
+}
