@@ -1,0 +1,8 @@
+./a.exe: interface.o image.o
+    gcc interface.o image.o
+
+intergace.o: interface.c image.h
+    gcc -c -Wall interface.c
+
+image.o: image.c image.h
+    gcc -c -Wall image.c
