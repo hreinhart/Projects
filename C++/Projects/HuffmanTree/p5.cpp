@@ -90,7 +90,7 @@ void insert(tree* tree, huffNode* node){
       tree->array[i] = node;
       
 }
-huffNode* dothething(char lets[], int freq[], int uniq2){
+huffNode* mergesHuff(char lets[], int freq[], int uniq2){
       huffNode *left, *right, *parent;
 
       tree* tree = buildminheap(lets, freq, uniq2);
@@ -124,9 +124,9 @@ void getcodes(huffNode* root, string huff[], int start,int ffreq[], int fhuff[],
       fhuff[root->data] = start;
    }
 }
-void fuckinghelpme(char lets[], int freq[], int uniq2, string huff[],int ffreq[], int fhuff[], char flets[]){
+void buildHuff(char lets[], int freq[], int uniq2, string huff[],int ffreq[], int fhuff[], char flets[]){
 
-      huffNode* root = dothething(lets,freq,uniq2);
+      huffNode* root = mergesHuff(lets,freq,uniq2);
       int start = 0;
 
       getcodes(root, huff, start, ffreq, fhuff, flets);
@@ -167,7 +167,7 @@ int main(int argc, char *argv[]) {
          uniq2++;
       }
    }
-      fuckinghelpme(letters,freq,uniq2,huff,finalfreq,finalhuff,finallets);
+      buildHuff(letters,freq,uniq2,huff,finalfreq,finalhuff,finallets);
       for(int i = 0; i < count+1; i++){
          finalcount += finalhuff[input[i]];
       }
