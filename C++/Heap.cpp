@@ -3,7 +3,7 @@
     File: Heap.cpp
     Description: Provides the Heap class, which builds a minHeap
         using the CircularDynamicArray class. 
-    Author: Jace McClenny
+    Author: Hunter Reinhart
     Course: CS 201: Introduction to Algorithms
     Date: November 3, 2022
     -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
