@@ -2,7 +2,7 @@
     -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     File: FibHeap.cpp
     Description:
-    Author: Jace McClenny
+    Author: Hunter Reinhart
     Course: CS 201: Introduction to Algorithms
     Date: November 3, 2022
     -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
