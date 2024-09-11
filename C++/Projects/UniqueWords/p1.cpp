@@ -89,7 +89,7 @@ int main(int argc, char *argv[]){
         
         for(int p = 0; p < unic; p++){
             checksame = unique[p].length();
-            int fuk = 0;
+            int isUnique = 0;
             int len = input.length();
             //cout << checksame << " " << unique[p] << endl;
             for(int l = 0; l < len; l++){
@@ -99,16 +99,16 @@ int main(int argc, char *argv[]){
                 }
                 
                 else if(input.at(l) == '?'){
-                    fuk++;
-                    //cout << fuk << endl;
+                    isUnique++;
+                    //cout << isUique << endl;
                 } 
                 else if(input.at(l) == unique[p].at(l)){
-                    fuk++;
-                    //cout << fuk << endl;
+                    isUnique++;
+                    //cout << isUnique << endl;
                 }
                 
             }
-            if(checksame == fuk){
+            if(checksame == isUnique){
                 search[searchc] = unique[p];
                 searchc++;
             }
