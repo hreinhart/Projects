@@ -1,7 +1,7 @@
 /*  Program Info
     -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    File: FibHeap.cpp
-    Description:
+    File: FibHeapProj.cpp
+    Description: Project for CS 201 class to show understanding of FibHeap
     Author: Hunter Reinhart
     Course: CS 201: Introduction to Algorithms
     Date: November 3, 2022
