@@ -9,7 +9,7 @@ int main(int argc, char **argv){
     int low = 0;
     int dig = 0;
     for(int i = 0; i < l; i++){
-        char c = *(word + i); // Make sure to always do it like this or it fucks up pretty bad.
+        char c = *(word + i); // Make sure to always do it like this.
         if(isupper(c)){
             up++;
         }
