@@ -1,140 +1,151 @@
-//Hunter Reinhart 11886420
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <pthread.h>
-#include <semaphore.h>
-#include <"mytime.h">
+#include <stdio.h>      // For standard I/O functions
+#include <stdlib.h>     // For memory allocation and conversion functions
+#include <string.h>     // For string manipulation functions
+#include <pthread.h>    // For thread creation and synchronization
+#include <semaphore.h>  // For semaphore operations
+#include "mytime.h"     // Custom header for generating random sleep times
 
-typedef struct customer{
-    int ticket;
-    sem_t sDone;
+// Structure to represent a customer
+typedef struct customer {
+    int ticket;         // Ticket number assigned to the customer
+    sem_t sDone;        // Semaphore to signal when the customer is served
+    pthread_t threadID; // Thread ID for the customer
 } customer;
 
+// Structure to represent the lunch system
 typedef struct lunch {
-    pthread_t *customerTIDS;
-    pthread_t *serverTIDS;
-    customer *customers;
-    customer *queue[50];
-    pthread_mutex_t ticketStop;
-    pthread_mutex_t queueStop;
-    pthread_mutex_t dequeueStop;
-    sem_t CustReady;
-    sem_t queueSpots;
-    int tickCount;
-    int numServ;
-    int numCust;
-    int queueBegin;
-    int queueEnd;
+    pthread_t *customerTIDS;  // Array of customer thread IDs
+    pthread_t *serverTIDS;    // Array of server thread IDs
+    customer *customers;      // Array of customer structures
+    customer *queue[50];      // Circular queue to hold customers waiting to be served
+    pthread_mutex_t ticketStop;  // Mutex to protect ticket generation
+    pthread_mutex_t queueStop;   // Mutex to protect queue operations
+    pthread_mutex_t dequeueStop; // Mutex to protect dequeue operations
+    sem_t CustReady;          // Semaphore to signal when a customer is ready
+    sem_t queueSpots;         // Semaphore to track available spots in the queue
+    int tickCount;            // Counter for ticket numbers
+    int numServ;              // Number of servers
+    int numCust;              // Number of customers
+    int queueBegin;           // Index of the front of the queue
+    int queueEnd;             // Index of the end of the queue
 } lunch;
 
-    void lunch_init(struct lunch *lunch){
-        lunch->tickerCounter = 1;
-        lunch->queueStart = 0;
-        lunch->queueEnd = -1;
+// Function to initialize the lunch system
+void lunch_init(struct lunch *lunch) {
+    lunch->tickCount = 1; // Start ticket count at 1
+    lunch->queueBegin = 0; // Initialize queue front index
+    lunch->queueEnd = -1;  // Initialize queue end index
 
-        lunch->ticketStop = (pthread_mutex_t)PTHREAD_MUTEX_INTITIALIZER;
-        lunch->queueStop = (pthread_mutex_t)PTHREAD_MUTEX_INTITIALIZER;
-        lunch->dequeueStop = (pthread_mutex_t)PTHREAD_MUTEX_INTITIALIZER;
+    // Initialize mutexes
+    lunch->ticketStop = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
+    lunch->queueStop = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
+    lunch->dequeueStop = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
 
-        sem_init(&(lunch->readyCustomers), 0, 0);
-        sem_init(&(lunch->queueSlots), 0, 50);
+    // Initialize semaphores
+    sem_init(&(lunch->CustReady), 0, 0);  // No customers ready initially
+    sem_init(&(lunch->queueSpots), 0, 50); // Queue can hold up to 50 customers
 
-        lunch->customers = (customer *)malloc(sizeof(customer) * (lunch->numCust));
-        lunch->servers = (pthread_t *)malloc(sizeof(pthread_t) * (lunch->numServers));
-    }
-    int lunch_get_ticket(struct lunch *lunch){
-        printf("%lu enter lunch_get_ticket\n", (long unsigned int)pthread_self());
-        pthread_mutex_lock(&(lunch->tickerStop));
-        sem_wait(&(lunch->queueSpots));
-        int ticket = (lunch->tickCount)++;
+    // Allocate memory for customers and threads
+    lunch->customers = (customer *)malloc(sizeof(customer) * (lunch->numCust));
+    lunch->serverTIDS = (pthread_t *)malloc(sizeof(pthread_t) * (lunch->numServ));
+    lunch->customerTIDS = (pthread_t *)malloc(sizeof(pthread_t) * (lunch->numCust));
+}
 
-        lunch->customers[ticket - 1].ticket = ticket;
-        printf("%lu get ticket %d\n", (long unsigned int)pthread_self(), ticket);
-    pthread_mutex_unlock(&(lunch->tickerStop));
+// Function for customers to get a ticket
+int lunch_get_ticket(struct lunch *lunch) {
+    printf("%lu enter lunch_get_ticket\n", (long unsigned int)pthread_self());
+    pthread_mutex_lock(&(lunch->ticketStop)); // Lock ticket generation
+    sem_wait(&(lunch->queueSpots));           // Wait for an available spot in the queue
+    int ticket = (lunch->tickCount)++;        // Assign a ticket to the customer
+
+    lunch->customers[ticket - 1].ticket = ticket; // Store the ticket in the customer structure
+    printf("%lu get ticket %d\n", (long unsigned int)pthread_self(), ticket);
+    pthread_mutex_unlock(&(lunch->ticketStop)); // Unlock ticket generation
+
+    // Simulate random wait time
     int waitTime = mytime(0, 10);
     printf("Sleeping Time: %d sec; Thread ID = %lu\n", waitTime, (long unsigned int)pthread_self());
     sleep(waitTime);
-    printf("%lu leave lunch_get_ticket%d\n", (long unsigned int)pthread_self());
+    printf("%lu leave lunch_get_ticket %d\n", (long unsigned int)pthread_self(), ticket);
     return ticket;
+}
+
+// Function for customers to wait for their turn
+void lunch_wait_turn(struct lunch *lunch) {
+    int ticket = lunch_get_ticket(lunch); // Get a ticket
+    printf("%lu enter lunch_wait_turn with %d\n", (long unsigned int)pthread_self(), ticket);
+    pthread_mutex_lock(&(lunch->queueStop)); // Lock the queue for adding the customer
+    (lunch->queueEnd)++;
+    lunch->queueEnd %= 50; // Ensure circular queue behavior
+    lunch->queue[lunch->queueEnd] = &(lunch->customers[ticket - 1]); // Add customer to the queue
+    sem_post(&(lunch->CustReady)); // Signal that a customer is ready
+    pthread_mutex_unlock(&(lunch->queueStop)); // Unlock the queue
+    sem_wait(&(lunch->customers[ticket - 1].sDone)); // Wait until the customer is served
+    printf("%lu leave lunch_wait_turn after %d served.\n", (long unsigned int)pthread_self(), ticket);
+}
+
+// Function for servers to serve customers
+void lunch_wait_customer(struct lunch *lunch) {
+    customer *served;
+    printf("%lu enter lunch_wait_customer\n", (long unsigned int)pthread_self());
+    int waitTime = mytime(10, 20); // Simulate random wait time
+    printf("Sleeping Time: %d sec; Thread ID = %lu\n", waitTime, (long unsigned int)pthread_self());
+    sleep(waitTime);
+    pthread_mutex_lock(&(lunch->dequeueStop)); // Lock the queue for removing a customer
+    sem_wait(&(lunch->CustReady)); // Wait for a customer to be ready
+    served = lunch->queue[lunch->queueBegin]; // Get the customer at the front of the queue
+    (lunch->queueBegin)++;
+    lunch->queueBegin %= 50; // Ensure circular queue behavior
+    show_serving(served->ticket); // Display the ticket being served
+    sem_post(&(served->sDone)); // Signal that the customer has been served
+    printf("%lu after served ticket %d\n", (long unsigned int)pthread_self(), served->ticket);
+    sem_post(&(lunch->queueSpots)); // Signal that a spot in the queue is now available
+    pthread_mutex_unlock(&(lunch->dequeueStop)); // Unlock the queue
+    printf("%lu leave lunch_wait_customer\n", (long unsigned int)pthread_self());
+}
+
+// Function to display the ticket being served
+void show_serving(int number) {
+    printf("Serving %d\n", number);
+}
+
+// Main function to initialize and run the lunch system
+int main(int argc, char **argv) {
+    lunch *lunch = (struct lunch *)malloc(sizeof(struct lunch)); // Allocate memory for the lunch system
+
+    // Validate command-line arguments
+    if (argc < 3) {
+        printf("Invalid argument. Enter the number of servers and customers separated by space.\n");
+        return 1;
+    } else {
+        lunch->numServ = atoi(argv[1]); // Number of servers
+        lunch->numCust = atoi(argv[2]); // Number of customers
     }
-    void lunch_wait_turn(struct lunch *lunch){
-        int ticket = lunch_get_ticket(lunch);
-        printf("%lu enter lunch_wait_turn with %d\n", (long unsigned int)pthread_self(), ticket);
-        pthread_mutex_lock(&(lunch->queueLock));
-        (lunch->queueEnd)++;
-        lunch->queueEnd %= 50;
-        lunch->ticketQueue[lunch->queueEnd] = lunch->customers[ticket-1];
-        sem_post(&(lunch->readyCustomers));
-        pthread_mutex_unlock(&(lunch->queueStop));
-        sem_wait(&(lunch->customers[ticket -1].sDone));
-        printf("%lu leave lunch_wait_turn after %d served.\n", (long unsigned int)pthread_self(), ticket);
-        pthread_exit(NULL);
+
+    lunch_init(lunch); // Initialize the lunch system
+
+    int i;
+    // Create server threads
+    for (i = 0; i < lunch->numServ; i++) {
+        pthread_create(&(lunch->serverTIDS[i]), NULL, (void *)lunch_wait_customer, lunch);
     }
-    void lunch_wait_customer(struct lunch *lunch){
-        customer *served;
-        printf("%lu enter lunch_wait_customer\n", (long unsigned int)pthread_self());
-        int waitTime = mytime(10, 20);
-        printf("Sleeping Time: %d sec; Thread ID = %lu\n", waitTime, (long unsigned int)pthread_self());
-        sleep(waitTime);
-        pthread_mutex_lock(&(lunch->dequeueStop));
-        sem_wait(&(lunch->CustReady));
-        served = lunch->ticketQueue[lunch->queueBegin];
-        (lunch->queueBegin)++;
-        lunch->queueStart %= 50;
-        show_serving(served->ticket);
-        sem_post(&(served->sDone));
-        printf("%lu after served ticket %d\n", (long unsigned int)pthread_self(), served->ticket);
-        sem_post(&(lunch->queueSpots));
-        pthread_mutex_unlock(&(lunch->dequeueStop));
-        printf("%lu leave lunch_wait_customer\n", (long unsigned int)pthread_self());
-        pthread_exit(NULL);
+    // Create customer threads
+    for (i = 0; i < lunch->numCust; i++) {
+        pthread_create(&(lunch->customerTIDS[i]), NULL, (void *)lunch_wait_turn, lunch);
     }
-    void show_serving(int number){
-        printf("Serving %d\n", number);
-        return;
+    // Wait for all server threads to finish
+    for (i = 0; i < lunch->numServ; i++) {
+        pthread_join(lunch->serverTIDS[i], NULL);
+    }
+    // Wait for all customer threads to finish
+    for (i = 0; i < lunch->numCust; i++) {
+        pthread_join(lunch->customerTIDS[i], NULL);
     }
 
-    void enqueue(struct lunch *lunch, struct customer *customer){
-        (lunch->queueEnd)++;
-        lunch->queueEnd %= 50;
-        lunch->ticketQueue[lunch->queueEnd] = customer;
-        return;
-    }
-    
-
-
-
-    int main(int argc, char **argv){
-        lunch *lunch = (struct lunch*)malloc(sizeof(struct lunch));
-
-        if(argc < 3){
-            printf("Invalid argument. Enter the servers and customers seperated by space.\n");
-            scanf("%d %d", &(lunch->numServ), &(lunch->numCust));
-        }
-        else{
-            lunch->numServ = atoi(argv[1]);
-            lunch->numCust = atoi(argv[2]);
-        }
-
-        lunch_init(lunch);
-        int i;
-        for(i = 0; i < lunch->numServ; i++){
-            pthread_create(&(lunch->servers[i]), NULL, (void*)lunch_wait_customer, lunch);
-        }
-        for(i= 0; i < lunch->numCust; i++){
-            pthread_create(&(lunch->customers[i].threadID), NULL, (void*)lunch_wait_turn, lunch);
-        }
-        for(i=0; i < lunch->numServ; i++){
-            pthread_join(lunch->serverTIDS[i], NULL);
-        }
-        for(i=0; i< lunch->numCust; i++){
-            pthread_join(lunch->customerTIDs[i].threadID, NULL);
-        }
-
-        free(lunch->customers);
-        free(lunch->serversTIDS);
-        free(lunch->customerTIDS);
-        free(lunch);
-        return 0;
-    }
+    // Free allocated memory
+    free(lunch->customers);
+    free(lunch->serverTIDS);
+    free(lunch->customerTIDS);
+    free(lunch);
+    return 0;
+}
